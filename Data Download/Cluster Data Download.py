@@ -13,9 +13,9 @@ telem_valid_ranges = [[9,26],[-80,20]] #The valid ranges for the telems
 #valid ranges  [[9,26],[-80,20],[5,6],[12,13],[-14,-12],[70,81],[26.5,30],[3,7.5],[4,11]] #Anything within these ranges inclusive can be determined to be valid
 
 # Loading orbit info
-orbit_numbers = list(load("./orbit_numbers.npy",allow_pickle=True))
-orbit_start_times = list(load("./orbit_start_times.npy",allow_pickle=True))
-orbit_end_times = list(load("./orbit_end_times.npy",allow_pickle=True))
+orbit_numbers = list(load("./orbit_numbers.npy", allow_pickle=True))
+orbit_start_times = list(load("./orbit_start_times.npy", allow_pickle=True))
+orbit_end_times = list(load("./orbit_end_times.npy", allow_pickle=True))
 
 def write_params_file(start_time,end_time,spacecraft): 
     """
@@ -76,11 +76,11 @@ def get_telem_files(spacecraft, start_orbit = 0, end_orbit = len(orbit_numbers))
         print("Getting data for orbit "+str(orbit_number)+" for spacecraft "+str(spacecraft)+" from "+start_time.isoformat()+" to "+end_time.isoformat());
         get_RDM(filename)
             
-def orbitAverages(spacecraft):
+def orbitAverages(spacecraft, telem):
     """
     Creates orbital for data ranges for each telem in the spacecraft
     """
-    spacecraftTelemStatistics = []
+    spacecraft_telem_statistics = []
     for i in range(0, len(orbit_numbers)):
         orbit_number = orbit_numbers[i]
         data_filename = generate_filename(spacecraft, orbit_number); #Gets the filename for the range data for that orbit
@@ -104,7 +104,7 @@ def orbitAverages(spacecraft):
             non_zero_telem_data = [x for x in valid_telem_data if x != 0] #Are not 0
             if len(range_2_telem_data) == 0: 
                 print("WARNING: Orbit %i file has no range 2 values" % orbit_number)
-            elif len(validTelemData) ==0:
+            elif len(valid_telem_data) ==0:
                 print("WARNING: Orbit %i contains no valid (within expected range) temperature values" % orbit_number)
             elif len(non_zero_telem_data) ==0:
                 print("WARNING: Orbit %i contains only zero values" % orbit_number)
@@ -119,22 +119,22 @@ def orbitAverages(spacecraft):
                 if ((len(non_zero_telem_data)<len(validTelemData)) and (mean(non_zero_telem_data)<-10)):
                     validTelemData = non_zero_telem_data
                     print("WARNING: Orbit %i discarding zero values" % orbit_number);   
-                count = len(validTelemData)
-                average = mean(validTelemData)
-                sigma = std(validTelemData)
-                maximum = max(validTelemData)
-                minimum = min(validTelemData)
-            telemStatistic = [count,average,sigma,maximum,minimum]
-            orbit_telem_statistics.append(telemStatistic)
+                count = len(valid_telem_data)
+                average = mean(valid_telem_data)
+                sigma = std(valid_telem_data)
+                maximum = max(valid_telem_data)
+                minimum = min(valid_telem_data)
+            telem_statistic = [count, average, sigma, maximum, minimum, telem]
+            orbit_telem_statistics.append(telem_statistic)
             print(telem +" loop complete")
-        spacecraftTelemStatistics.append(orbit_telem_statistics);
+        spacecraft_telem_statistics.append(orbit_telem_statistics)
         print("Orbit " + str(orbit_number) + " loop complete")
-    return spacecraftTelemStatistics;
+    return spacecraft_telem_statistics
             
 #%% RUN THINGS
-get_telem_files(1,0,3650);
-spacecraftTelemStatistics = orbitAverages(spacecraft='1'); #In the order ["F_055", "F_074", "F_047", "F_048", "F_034", "J_236", "J_106", "J_213", "J_216"]
-save("./C1SpacecraftTelemStatisticsTestV2(incl J)", spacecraftTelemStatistics);
+get_telem_files(1,0,3650)
+spacecraft_telem_statistics = orbitAverages(spacecraft='1'); #In the order ["F_055", "F_074", "F_047", "F_048", "F_034", "J_236", "J_106", "J_213", "J_216"]
+save("./C1spacecraft_telem_statistics", spacecraft_telem_statistics)
 
 
 
