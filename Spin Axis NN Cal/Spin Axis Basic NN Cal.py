@@ -85,7 +85,7 @@ def create_and_split_data(orbits, sc, training_years, axis): #Axis y = 1, z = 2
 
 
 #%% Convert to 2D PyTorch tensors
-x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time = create_and_split_data(orbits, 1, 15, 1)
+x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time = create_and_split_data(orbits, 1, 10, 1)
 x_train = torch.tensor(x_train, dtype=torch.float32)
 y_train = torch.tensor(y_train, dtype=torch.float32).reshape(-1, 1)
 x_test = torch.tensor(x_test, dtype=torch.float32)
@@ -181,8 +181,8 @@ def plot_predictions(model, x_test, y_test, time_test, split_time):
         y_pred = model(x_test)
 
     plt.figure(figsize=(10, 6))
-    plt.scatter(time_test, y_test, label='Actual')
-    plt.scatter(time_test, y_pred, label='Predicted')
+    plt.scatter(time_test, y_test, label='Actual', marker='x')
+    plt.scatter(time_test, y_pred, label='Predicted', marker='x')
     plt.axvline(x=split_time, color='r', linestyle='--', label='Split Time')
     plt.xlabel('Time')
     plt.ylabel('Offset')
