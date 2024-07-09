@@ -40,3 +40,4 @@ def create_sequences(data, seq_length):
         i += seq_length
     return np.array(sequences)
 
+
