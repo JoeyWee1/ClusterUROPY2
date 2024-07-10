@@ -3,41 +3,126 @@ import tensorflow as tf
 from tensorflow import keras
 from orbits import Orbit
 from datasplit import create_and_split_data
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, RobustScaler
 import datetime
+import pandas as pd
+import seaborn as sns
+from pylab import rcParams
+import matplotlib.pyplot as plt
+from matplotlib import rc
+from sklearn.model_selection import train_test_split
+from pandas.plotting import register_matplotlib_converters
 
-
+sns.set(style='whitegrid', palette='muted', font_scale=1.5)
+rcParams['figure.figsize'] = 22, 10
 
 #%% Importing orbits
 orbits = np.load("Spin Axis NN Cal\cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
-x_train_raw, x_test_raw, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time = create_and_split_data(orbits, 1, 10, 1)
+print("Orbits loaded")
+axes = ['x', 'y', 'z']
+spacecraft = 0 #0 to 3
+axis = 1 #x = 0, y = 1, z = 2
+training_years = 15
+x_train_raw, x_test_raw, y_train_raw, y_test_raw, time_train, time_test, sc, axis, training_years, split_time = create_and_split_data(orbits, spacecraft, training_years, axis)
+print("Data split")
 
-#%% Normalizing the data
-scaler = StandardScaler() #Scaling the data to a normal distribution
-scaler.fit(x_train_raw)
-x_train = scaler.transform(x_train_raw)
-x_test = scaler.transform(x_test_raw)
+#%% Converting x arrays to pandas frames
+x_train_raw = pd.DataFrame(x_train_raw)
+x_train_raw.rename(columns={0: 'F74'}, inplace=True)
+x_train_raw.rename(columns={1: 'F55'}, inplace=True)
+x_test_raw = pd.DataFrame(x_test_raw)
+x_test_raw.rename(columns={0: 'F74'}, inplace=True)
+x_test_raw.rename(columns={1: 'F55'}, inplace=True)
+y_train_raw = pd.DataFrame(y_train_raw)
+y_train_raw.rename(columns={0: 'Offset'}, inplace=True)
+y_test_raw = pd.DataFrame(y_test_raw)
+y_test_raw.rename(columns={0: 'Offset'}, inplace=True)
+print("Pandas frames created")
 
-#%% Splitting data into sequences
-num_samples = 23 #Number of seqeunces to split the data into
+#%% Scaling the data
+feature_columns = ['F74', 'F55']
+feature_transformer = RobustScaler()
+label_transformer = RobustScaler()
+feature_transformer = feature_transformer.fit(x_train_raw[feature_columns].to_numpy())
+label_transformer = label_transformer.fit(y_train_raw.to_numpy().reshape(-1, 1))
+x_train = feature_transformer.transform(x_train_raw[feature_columns].to_numpy()) #Transform training features
+y_train = label_transformer.transform(y_train_raw.to_numpy().reshape(-1, 1)) #Transform training labels
+x_test = feature_transformer.transform(x_test_raw[feature_columns].to_numpy()) #Transform testing features
+y_test = label_transformer.transform(y_test_raw.to_numpy().reshape(-1, 1)) #Transform testing labels
+print("Data scaled")
 
-def create_sequences(data, seq_length): 
+#%% Creating sequences
+def create_sequences(x, y, time_steps = 10):
     '''
-    Function to split the data into sequences of a given length
+    Creates sequences to train model
 
     Args:
-        data: The data to be split
-        seq_length: The number of orbits (samples) to be included in each sequence
-    
+        x: The feature set
+        y: The label set
+        time_steps: The number of time steps to look back on to predict the next value
+
     Returns:
-        sequences: The sequences of data
+        xs: The feature sequences
+        ys: The label of the target to predict
     '''
-    sequences = []
-    i = 0
-    while i < len(data) - seq_length:
-        sequence = data[i : i + seq_length]
-        sequences.append(sequence)
-        i += seq_length
-    return np.array(sequences)
+    xs, ys = [], []
+    for i in range(len(x) - time_steps - 1):
+        x_temp = x[i:(i + time_steps + 1)] #Creates a sequence of time_steps before the target value
+        xs.append(x_temp)
+        ys.append(y[i + time_steps]) #The target value is the value after the sequence
+    return np.array(xs), np.array(ys)
+
+x_train_sequences, y_train_sequences = create_sequences(x_train, y_train)
+x_test_sequences, y_test_sequences = create_sequences(x_test, y_test)
+
+print("Sequences created")
+print(x_train_sequences.shape, y_train_sequences.shape)
+
+#%% Creating the model
+model = keras.Sequential()
+model.add(
+  keras.layers.Bidirectional( #Model learns the intricacies of the sequences in both directions
+    keras.layers.LSTM( 
+    units=500, #Number of neurons in the LSTM layer; this can be tuned
+      input_shape=(x_train_sequences.shape[1], x_train_sequences.shape[2])
+    )
+  )
+)
+model.add(keras.layers.Dropout(rate=0.2)) #Dropout layer to prevent overfitting 
+model.add(keras.layers.Dense(units=1)) #Output layer with 1 neuron because this is a regression problem
+model.compile(loss='mean_squared_error', optimizer='adam')
+print("Model created")
+
+#%% Training the model
+history = model.fit(
+    x_train_sequences, y_train_sequences, 
+    epochs=100, 
+    batch_size=20, 
+    validation_split=0.1,
+    shuffle=False
+)
+plt.plot(history.history['loss'], label='train')
+plt.plot(history.history['val_loss'], label='test')
+plt.legend()
+plt.show()
+
+#%% Testing the model
+y_pred = model.predict(x_test_sequences)
+y_train_inv = label_transformer.inverse_transform(y_train_sequences.reshape(1, -1))
+y_test_inv = label_transformer.inverse_transform(y_test_sequences.reshape(1, -1))
+y_pred_inv = label_transformer.inverse_transform(y_pred)
+plt.scatter(time_train[11:], y_train_inv.flatten(), label='Training Data', marker='x')
+plt.scatter(time_test[11:], y_test_inv.flatten(), label='Actual Values', marker='x')
+plt.scatter(time_test[11:], y_pred_inv.flatten(), label='Test Predictions', marker='x')
+plt.xlabel('Time')
+plt.ylabel('Offset')
+plt.title('Bi-LSTM Cluster {} {}-axis with {} years of training data'.format(spacecraft + 1, axes[axis], training_years))
+plt.legend()
+plt.show()
+
+
+
+
+
 
 
