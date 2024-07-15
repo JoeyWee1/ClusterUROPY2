@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rc
 from sklearn.model_selection import train_test_split
 from pandas.plotting import register_matplotlib_converters
+import subprocess
 
 sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 rcParams['figure.figsize'] = 22, 10
@@ -125,12 +126,31 @@ def train_test_model(spacecraft=3, axis= 2, training_years=15, neurons=128, time
   plt.legend()
   plt.savefig('./Outputs/C{}/{}/{} Neuron Bi-LSTM {} years {} steps {} epochs.png'.format(spacecraft + 1, axes[axis], neurons, training_years, time_steps, epochs))
   
-# Loop over all spacecraft
+#%% Loop over all spacecraft
 for spacecraft in range(0,4):
   # Loop over x and y axis
   for axis in range(0,3):
     # Call the train_test_model function
-    train_test_model(spacecraft=spacecraft, axis=axis, neurons=10, epochs = 50)
+    train_test_model(spacecraft=spacecraft, axis=axis, neurons=1, epochs = 5)
+
+  #%% Commit to git
+  # Define the commands to run
+commands = [
+    'git add .',
+    'git commit -m "Auto-commit"',
+    'git push origin main'  # Replace 'main' with your branch name if different
+]
+def run_command(command):
+    """Run a shell command and print its output."""
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    print(result.stdout)
+    if result.stderr:
+        print(result.stderr)
+def run_commands(commands):
+    for command in commands:
+        run_command(command)
+  
+run_commands(commands)
 
 
 
