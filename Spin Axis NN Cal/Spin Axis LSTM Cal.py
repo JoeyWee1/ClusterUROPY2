@@ -115,6 +115,7 @@ def train_test_model(spacecraft=3, axis= 2, training_years=15, neurons=128, time
   y_train_inv = label_transformer.inverse_transform(y_train_sequences.reshape(1, -1))
   y_test_inv = label_transformer.inverse_transform(y_test_sequences.reshape(1, -1))
   y_pred_inv = label_transformer.inverse_transform(y_pred)
+  plt.clf()
   plt.scatter(time_train[(time_steps + 1):], y_train_inv.flatten(), label='Training Data', marker='x')
   plt.scatter(time_test[(time_steps + 1):], y_test_inv.flatten(), label='Actual Values', marker='x')
   plt.scatter(time_test[(time_steps + 1):], y_pred_inv.flatten(), label='Test Predictions', marker='x')
