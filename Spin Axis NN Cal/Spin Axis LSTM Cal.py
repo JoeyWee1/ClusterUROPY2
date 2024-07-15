@@ -41,7 +41,7 @@ def create_sequences(x, y, time_steps = 24):
         ys.append(y[i + time_steps]) #The target value is the value after the sequence
     return np.array(xs), np.array(ys)
 
-def train_test_model(spacecraft=3, axis= 2, training_years=15, neurons=128):
+def train_test_model(spacecraft=3, axis= 2, training_years=15, neurons=128, time_steps=24, epochs=100):
   '''
   Runs everything to train and test the model for a spacecraft and axis
   '''
@@ -76,8 +76,8 @@ def train_test_model(spacecraft=3, axis= 2, training_years=15, neurons=128):
   print("Data scaled")
 
   #%% Creating sequences
-  x_train_sequences, y_train_sequences = create_sequences(x_train, y_train)
-  x_test_sequences, y_test_sequences = create_sequences(x_test, y_test)
+  x_train_sequences, y_train_sequences = create_sequences(x_train, y_train, time_steps=time_steps)
+  x_test_sequences, y_test_sequences = create_sequences(x_test, y_test, time_steps=time_steps)
 
   print("Sequences created")
   print(x_train_sequences.shape, y_train_sequences.shape)
@@ -100,7 +100,7 @@ def train_test_model(spacecraft=3, axis= 2, training_years=15, neurons=128):
   #%% Training the model
   history = model.fit(
       x_train_sequences, y_train_sequences, 
-      epochs=100, 
+      epochs=epochs, 
       batch_size=20, 
       validation_split=0.1,
       shuffle=False
@@ -115,21 +115,21 @@ def train_test_model(spacecraft=3, axis= 2, training_years=15, neurons=128):
   y_train_inv = label_transformer.inverse_transform(y_train_sequences.reshape(1, -1))
   y_test_inv = label_transformer.inverse_transform(y_test_sequences.reshape(1, -1))
   y_pred_inv = label_transformer.inverse_transform(y_pred)
-  plt.scatter(time_train[25:], y_train_inv.flatten(), label='Training Data', marker='x')
-  plt.scatter(time_test[25:], y_test_inv.flatten(), label='Actual Values', marker='x')
-  plt.scatter(time_test[25:], y_pred_inv.flatten(), label='Test Predictions', marker='x')
+  plt.scatter(time_train[(time_steps + 1):], y_train_inv.flatten(), label='Training Data', marker='x')
+  plt.scatter(time_test[(time_steps + 1):], y_test_inv.flatten(), label='Actual Values', marker='x')
+  plt.scatter(time_test[(time_steps + 1):], y_pred_inv.flatten(), label='Test Predictions', marker='x')
   plt.xlabel('Time')
   plt.ylabel('Offset')
   plt.title('{} Neuron Bi-LSTM Cluster {} {}-axis with {} years of training data'.format(neurons ,spacecraft + 1, axes[axis], training_years))
   plt.legend()
-  plt.savefig('./Outputs/C{}/{}/{} Neuron Bi-LSTM {} years.png'.format(spacecraft + 1, axes[axis], neurons, training_years))
+  plt.savefig('./Outputs/C{}/{}/{} Neuron Bi-LSTM {} years {} steps {} epochs.png'.format(spacecraft + 1, axes[axis], neurons, training_years, time_steps, epochs))
   
 # Loop over all spacecraft
-for spacecraft in range(3):
+for spacecraft in range(0,4):
   # Loop over x and y axis
-  for axis in range(2):
+  for axis in range(0,3):
     # Call the train_test_model function
-    train_test_model(spacecraft=spacecraft, axis=axis, neurons=512)
+    train_test_model(spacecraft=spacecraft, axis=axis, neurons=10, epochs = 50)
 
 
 
