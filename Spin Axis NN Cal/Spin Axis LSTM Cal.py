@@ -20,8 +20,8 @@ rcParams['figure.figsize'] = 22, 10
 orbits = np.load("Spin Axis NN Cal\cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
 print("Orbits loaded")
 axes = ['x', 'y', 'z']
-spacecraft = 0 #0 to 3
-axis = 1 #x = 0, y = 1, z = 2
+spacecraft = 3 #0 to 3
+axis = 2 #x = 0, y = 1, z = 2
 training_years = 15
 x_train_raw, x_test_raw, y_train_raw, y_test_raw, time_train, time_test, sc, axis, training_years, split_time = create_and_split_data(orbits, spacecraft, training_years, axis)
 print("Data split")
@@ -52,7 +52,7 @@ y_test = label_transformer.transform(y_test_raw.to_numpy().reshape(-1, 1)) #Tran
 print("Data scaled")
 
 #%% Creating sequences
-def create_sequences(x, y, time_steps = 10):
+def create_sequences(x, y, time_steps = 24):
     '''
     Creates sequences to train model
 
@@ -111,9 +111,9 @@ y_pred = model.predict(x_test_sequences)
 y_train_inv = label_transformer.inverse_transform(y_train_sequences.reshape(1, -1))
 y_test_inv = label_transformer.inverse_transform(y_test_sequences.reshape(1, -1))
 y_pred_inv = label_transformer.inverse_transform(y_pred)
-plt.scatter(time_train[11:], y_train_inv.flatten(), label='Training Data', marker='x')
-plt.scatter(time_test[11:], y_test_inv.flatten(), label='Actual Values', marker='x')
-plt.scatter(time_test[11:], y_pred_inv.flatten(), label='Test Predictions', marker='x')
+plt.scatter(time_train[25:], y_train_inv.flatten(), label='Training Data', marker='x')
+plt.scatter(time_test[25:], y_test_inv.flatten(), label='Actual Values', marker='x')
+plt.scatter(time_test[25:], y_pred_inv.flatten(), label='Test Predictions', marker='x')
 plt.xlabel('Time')
 plt.ylabel('Offset')
 plt.title('Bi-LSTM Cluster {} {}-axis with {} years of training data'.format(spacecraft + 1, axes[axis], training_years))
