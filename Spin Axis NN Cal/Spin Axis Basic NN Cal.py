@@ -83,7 +83,6 @@ def create_and_split_data(orbits, sc, training_years, axis): #Axis y = 1, z = 2
             pass
     return x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time
 
-
 #%% Convert to 2D PyTorch tensors
 x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time = create_and_split_data(orbits, 1, 10, 1)
 x_train = torch.tensor(x_train, dtype=torch.float32)
