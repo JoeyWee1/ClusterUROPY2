@@ -112,9 +112,6 @@ def train_test_model(n_epochs=100, batch_size=10, sc=1, years=15):
     plt.legend()
     plt.savefig("./Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs.png".format(sc+1, years, n_epochs))
 
-
-train_test_model(n_epochs=50, batch_size=10, sc=0, years=10)
-
 # #%% Loop over all spacecraft
 # for spacecraft in range(0,4):
 #   # Loop over x and y axis
