@@ -26,11 +26,11 @@ import copy
 orbits = np.load("Spin Axis NN Cal\cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
 
 #%% Convert to 2D PyTorch tensors
-def train_test_model(n_epochs=100, batch_size=10):
+def train_test_model(n_epochs=100, batch_size=10, sc=1, years=15):
     '''
     Runs everything to train and test the model for a spacecraft and axis
     '''
-    x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time, x_predict = x_axis_create_and_split_data(orbits, 2, 15)
+    x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time, x_predict = x_axis_create_and_split_data(orbits, sc, years)
     x_train = torch.tensor(x_train, dtype=torch.float32)
     y_train = torch.tensor(y_train, dtype=torch.float32).reshape(-1, 1)
     x_test = torch.tensor(x_test, dtype=torch.float32)
@@ -110,7 +110,39 @@ def train_test_model(n_epochs=100, batch_size=10):
     plt.ylabel('Offset')
     plt.title('Predictions vs Actual')
     plt.legend()
-    plt.show()
+    plt.savefig("./Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs.png".format(sc+1, years, n_epochs))
 
 
+train_test_model(n_epochs=50, batch_size=10, sc=0, years=10)
+
+# #%% Loop over all spacecraft
+# for spacecraft in range(0,4):
+#   # Loop over x and y axis
+#   for axis in range(0,3):
+#     # Call the train_test_model function
+#     train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=15)
+
+#%% Commit to git
+# Define the commands to run
+commands = [
+    'git add .',
+    'git commit -m "Auto-commit"',
+    'git push origin main'  # Replace 'main' with your branch name if different
+]
+def run_command(command):
+    """Run a shell command and print its output."""
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    print(result.stdout)
+    if result.stderr:
+        print(result.stderr)
+def run_commands(commands):
+    for command in commands:
+        run_command(command)
+  
+run_commands(commands)
    
