@@ -18,7 +18,7 @@ sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 rcParams['figure.figsize'] = 22, 10
 
 #%% Importing orbits
-orbits = np.load("Spin Axis NN Cal\cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
+orbits = np.load("Spin Axis NN Cal/cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
 print("Orbits loaded")
 axes = ['x', 'y', 'z']
 
@@ -131,7 +131,12 @@ for spacecraft in range(0,4):
   # Loop over x and y axis
   for axis in range(0,3):
     # Call the train_test_model function
-    train_test_model(spacecraft=spacecraft, axis=axis, neurons=1, epochs = 5)
+    train_test_model(spacecraft=spacecraft, axis=axis, neurons=128, epochs = 50)
+    train_test_model(spacecraft=spacecraft, axis=axis, neurons=128, epochs = 100)
+    train_test_model(spacecraft=spacecraft, axis=axis, neurons=128, epochs = 500)
+    train_test_model(spacecraft=spacecraft, axis=axis, neurons=512, epochs = 50)
+    train_test_model(spacecraft=spacecraft, axis=axis, neurons=512, epochs = 100)
+    train_test_model(spacecraft=spacecraft, axis=axis, neurons=512, epochs = 500)
 
   #%% Commit to git
   # Define the commands to run
