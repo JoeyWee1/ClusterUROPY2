@@ -131,7 +131,7 @@ def x_axis_create_and_split_data(orbits, sc, training_years):
         if (month == 1 or month == 2 or month == 3 or month == 4):
             pass
         else: #If the data is interpolated, don't use it
-            data_interp_marker = False
+            data_interp_marker = True
 
         #Classify data into test and train periods
         if (orbit_start_time > split_time): #Find orbits that start after the split time
