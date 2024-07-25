@@ -23,8 +23,8 @@ import copy
 
 #%% Importing orbits
 
-orbits = np.load("Spin Axis NN Cal/cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle=True)
-# orbits = np.load("Spin Axis NN Cal\cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
+orbits = np.load("Offset NN Cal/cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle=True)
+# orbits = np.load("Offset NN Cal\cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
 
 #%% Convert to 2D PyTorch tensors
 def train_test_model(n_epochs=100, batch_size=10, sc=1, years=15):
