@@ -116,7 +116,7 @@ def train_test_model(n_epochs=100, batch_size=10, sc=1, years=15):
     plt.title('Cluster {} basic NN {} years {} epochs predictions vs actual'.format(sc+1, years, n_epochs))
     plt.legend()
     # plt.savefig("./Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs.png".format(sc+1, years, n_epochs))
-    plt.savefig("/home/joey/Desktop/UROP Y2/ClusterUROPY2-1/Offset NN Cal/Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs.png".format(sc+1, years, n_epochs))
+    plt.savefig("/home/joey/Desktop/UROP Y2/ClusterUROPY2-1/Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs.png".format(sc+1, years, n_epochs))
 
 
 # # #%% Loop over all spacecraft
