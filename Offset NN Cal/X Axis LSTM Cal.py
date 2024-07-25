@@ -109,6 +109,7 @@ def train_test_model(spacecraft=3, training_years=15, neurons=128, time_steps=3,
 
     #%% Creating sequences
 
+# THIS HAS BEEN LEFT INCOMPLETE BECAUSE IT WAS DECIDED TO WORK ON USING THE GRADIENTS INSTEAD
 
 
   
