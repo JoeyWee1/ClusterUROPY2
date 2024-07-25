@@ -12,6 +12,7 @@ import tqdm
 from sklearn.model_selection import train_test_split
 from orbits import Orbit
 import datetime
+from sklearn.preprocessing import StandardScaler
 
 #%% Importing orbits
 orbits = np.load("Spin Axis NN Cal\cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
