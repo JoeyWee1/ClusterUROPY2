@@ -30,12 +30,12 @@ def train_test_model(n_epochs=100, batch_size=10, sc=1, years=15):
     '''
     Runs everything to train and test the model for a spacecraft and axis
     '''
-    x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time, x_interp, time_interp = x_axis_create_and_split_data(orbits, sc, years)
+    x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time, x_interp_test, time_interp_test, y_interp_train, time_interp_train = x_axis_create_and_split_data(orbits, sc, years)
     x_train = torch.tensor(x_train, dtype=torch.float32)
     y_train = torch.tensor(y_train, dtype=torch.float32).reshape(-1, 1)
     x_test = torch.tensor(x_test, dtype=torch.float32)
     y_test = torch.tensor(y_test, dtype=torch.float32).reshape(-1, 1)
-    x_interp = torch.tensor(x_interp, dtype=torch.float32) #The interpolated values to predict
+    x_interp_test = torch.tensor(x_interp_test, dtype=torch.float32) #The interpolated values to predict
 
     #%% Define the model
     model = nn.Sequential(
@@ -101,13 +101,14 @@ def train_test_model(n_epochs=100, batch_size=10, sc=1, years=15):
     model.eval()
     with torch.no_grad():
         y_pred = model(x_test)
-        y_interp = model(x_interp)
+        y_interp = model(x_interp_test)
 
     plt.figure(figsize=(10, 6))
+    plt.scatter(time_interp_train, y_interp_train, label='Training Period Interp', marker='o')
     plt.scatter(time_train, y_train, label='Training', marker='x')
-    plt.scatter(time_interp, y_interp, label='Interpolated', marker='o')
-    plt.scatter(time_test, y_test, label='Actual', marker='x')
-    plt.scatter(time_test, y_pred, label='Predicted', marker='x')
+    plt.scatter(time_interp_test, y_interp, label='Testing Period Interp', marker='o')
+    plt.scatter(time_test, y_test, label='Testing Calibrated', marker='x')
+    plt.scatter(time_test, y_pred, label='Model Predicted', marker='x')
     plt.axvline(x=split_time, color='r', linestyle='--', label='Split Time')
     plt.xlabel('Time')
     plt.ylabel('Offset')
@@ -116,14 +117,16 @@ def train_test_model(n_epochs=100, batch_size=10, sc=1, years=15):
     plt.savefig("./Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs.png".format(sc+1, years, n_epochs))
 
 
-# #%% Loop over all spacecraft
-for spacecraft in range(2,4):
-    train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=10)
-    train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=10)
-    train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=10)
-    train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=15)
-    train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=15)
-    train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=15)
+train_test_model(n_epochs=50, batch_size=10, sc=0, years=15)
+
+# # #%% Loop over all spacecraft
+# for spacecraft in range(0,4):
+#     train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=15)
 
 #%% Commit to git
 # Define the commands to run

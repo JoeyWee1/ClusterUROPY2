@@ -105,8 +105,10 @@ def x_axis_create_and_split_data(orbits, sc, training_years):
     x_test = []
     y_test = []
     time_test = []
-    x_interp = []
-    time_interp = []    
+    x_interp_test = []
+    time_interp_test = []    
+    y_interp_train = []
+    time_interp_train = []
     first_orbit_start_time = datetime.datetime(2000, 8, 24, 8, 56, 52)
     split_time = first_orbit_start_time + datetime.timedelta(seconds = (training_years * 31557600)) #Defines the split time based on the number of training years
 
@@ -148,15 +150,16 @@ def x_axis_create_and_split_data(orbits, sc, training_years):
                     y_train.append(label)
                     time_train.append(orbit_start_time)
                 else:
-                    pass
+                    y_interp_train.append(label)
+                    time_interp_train.append(orbit_start_time)
             else: #The training period marker is false and the data is in the testing period
                 if(data_interp_marker == False):
                     x_test.append(feature_vector)
                     y_test.append(label)
                     time_test.append(orbit_start_time);   
                 else:
-                    x_interp.append(feature_vector)
-                    time_interp.append(orbit_start_time)             
+                    x_interp_test.append(feature_vector)
+                    time_interp_test.append(orbit_start_time)             
         else: #Else, the data is dirty and isn't added to either array
             pass
-    return x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time, x_interp, time_interp
+    return x_train, x_test, y_train, y_test, time_train, time_test, sc, axis, training_years, split_time, x_interp_test, time_interp_test, y_interp_train, time_interp_train
