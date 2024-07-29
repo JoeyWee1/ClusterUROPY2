@@ -138,15 +138,30 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
 
     #V3 try leaky relu
     # Using LeakyReLU activation functions
+    # model = nn.Sequential(
+    #     nn.Linear(10, 20),
+    #     nn.LeakyReLU(),
+    #     nn.Linear(20, 10),
+    #     nn.LeakyReLU(),
+    #     nn.Linear(10, 5),
+    #     nn.LeakyReLU(),
+    #     nn.Linear(5, 1)
+    # )
+
+    #V4 try dropout
+    # Adding dropout layers
     model = nn.Sequential(
         nn.Linear(10, 20),
-        nn.LeakyReLU(),
+        nn.ReLU(),
+        nn.Dropout(0.5),  # Dropout with 50% probability
         nn.Linear(20, 10),
-        nn.LeakyReLU(),
+        nn.ReLU(),
+        nn.Dropout(0.5),
         nn.Linear(10, 5),
-        nn.LeakyReLU(),
+        nn.ReLU(),
         nn.Linear(5, 1)
     )
+
 
     print("Model defined")
 
