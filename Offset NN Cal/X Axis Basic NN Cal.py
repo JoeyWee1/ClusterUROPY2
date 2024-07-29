@@ -115,24 +115,26 @@ def train_test_model(n_epochs=100, batch_size=10, sc=1, years=15):
     plt.ylabel('Offset')
     plt.title('Cluster {} basic NN {} years {} epochs batch {} predictions vs actual'.format(sc+1, years, n_epochs, batch_size))
     plt.legend()
+    plt.show()
     # plt.savefig("./Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs.png".format(sc+1, years, n_epochs))
-    plt.savefig("/home/joey/Desktop/UROP Y2/ClusterUROPY2-1/Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs batch {}.png".format(sc+1, years, n_epochs, batch_size))
+    # plt.savefig("/home/joey/Desktop/UROP Y2/ClusterUROPY2-1/Outputs_X_Axis/C{}/NN/Basic NN {} years {} epochs batch {}.png".format(sc+1, years, n_epochs, batch_size))
 
+train_test_model(n_epochs=500, batch_size=10, sc=0, years=15)
 
-# # #%% Loop over all spacecraft
-for spacecraft in range(0,4):
-    train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=10)
-    train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=10)
-    train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=10)
-    train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=15)
-    train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=15)
-    train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=15)
-    train_test_model(n_epochs=50, batch_size=25, sc=spacecraft, years=10)
-    train_test_model(n_epochs=100, batch_size=25, sc=spacecraft, years=10)
-    train_test_model(n_epochs=500, batch_size=25, sc=spacecraft, years=10)
-    train_test_model(n_epochs=50, batch_size=25, sc=spacecraft, years=15)
-    train_test_model(n_epochs=100, batch_size=25, sc=spacecraft, years=15)
-    train_test_model(n_epochs=500, batch_size=25, sc=spacecraft, years=15)
+#%% Loop over all spacecraft
+# for spacecraft in range(0,4):
+#     train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=50, batch_size=10, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=100, batch_size=10, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=500, batch_size=10, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=50, batch_size=25, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=100, batch_size=25, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=500, batch_size=25, sc=spacecraft, years=10)
+#     train_test_model(n_epochs=50, batch_size=25, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=100, batch_size=25, sc=spacecraft, years=15)
+#     train_test_model(n_epochs=500, batch_size=25, sc=spacecraft, years=15)
 
 #%% Commit to git
 # Define the commands to run
