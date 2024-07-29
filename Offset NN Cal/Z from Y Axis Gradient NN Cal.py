@@ -188,22 +188,23 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
         y_test = y_scaler.inverse_transform(y_test)
         y_train = y_scaler.inverse_transform(y_train)
     
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(30, 6))
     plt.scatter(time_train, y_train, label='Training', marker='x')
-    plt.scatter(time_test, y_test, label='Calibrated', marker='x')
-    plt.scatter(time_test, y_pred, label='Model Predicted', marker='x')
+    plt.scatter(time_test, y_test, label='Calibrated', marker='x', s=5)
+    plt.scatter(time_test, y_pred, label='Model Predicted', marker='x', s=5)
     plt.axvline(x=split_time, color='r', linestyle='--', label='Split Time')
     plt.xlabel('Time')
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} basic NN {} years {} epochs batch {}'.format(sc+1, training_years, n_epochs, batch_size))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v1.png".format(sc+1, training_years, n_epochs))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v3.png".format(sc+1, training_years, n_epochs))
 
 for i in range(0,4):
     train_test_model(i, 15, 500, 10)
     train_test_model(i, 15, 500, 25)
     train_test_model(i, 15, 250, 10)
     train_test_model(i, 15, 250, 25)
-    
+    train_test_model(i, 15, 1000, 10)
+    train_test_model(i, 15, 1000, 25)
 
         
