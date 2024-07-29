@@ -125,15 +125,29 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     print("Data converted to tensors")
 
     #Define the model
+    #V2
+    # model = nn.Sequential( 
+    #     nn.Linear(10, 20),
+    #     nn.ReLU(),
+    #     nn.Linear(20, 10),
+    #     nn.ReLU(),
+    #     nn.Linear(10, 5),
+    #     nn.ReLU(),
+    #     nn.Linear(5, 1)
+    # )
+
+    #V3 try leaky relu
+    # Using LeakyReLU activation functions
     model = nn.Sequential(
         nn.Linear(10, 20),
-        nn.ReLU(),
+        nn.LeakyReLU(),
         nn.Linear(20, 10),
-        nn.ReLU(),
+        nn.LeakyReLU(),
         nn.Linear(10, 5),
-        nn.ReLU(),
+        nn.LeakyReLU(),
         nn.Linear(5, 1)
     )
+
     print("Model defined")
 
     #Define the loss function and batch start indices
