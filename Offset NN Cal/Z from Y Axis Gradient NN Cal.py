@@ -226,14 +226,20 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} basic NN {} years {} epochs batch {}'.format(sc+1, training_years, n_epochs, batch_size))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v3.png".format(sc+1, training_years, n_epochs))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v4.png".format(sc+1, training_years, n_epochs))
 
 for i in range(0,4):
+    print("Cluster {}".format(i+1))
     train_test_model(i, 15, 500, 10)
+    print("Cluster {}".format(i+1))
     train_test_model(i, 15, 500, 25)
+    print("Cluster {}".format(i+1))
     train_test_model(i, 15, 250, 10)
+    print("Cluster {}".format(i+1))
     train_test_model(i, 15, 250, 25)
+    print("Cluster {}".format(i+1))
     train_test_model(i, 15, 1000, 10)
+    print("Cluster {}".format(i+1))
     train_test_model(i, 15, 1000, 25)
 
         
