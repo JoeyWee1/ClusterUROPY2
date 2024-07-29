@@ -126,9 +126,7 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
 
     #Define the model
     model = nn.Sequential(
-        nn.Linear(10, 40),
-        nn.ReLU(),
-        nn.Linear(40, 20),
+        nn.Linear(10, 20),
         nn.ReLU(),
         nn.Linear(20, 10),
         nn.ReLU(),
@@ -202,12 +200,8 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v1.png".format(sc+1, training_years, n_epochs))
 
 for i in range(0,4):
-    train_test_model(i, 10, 100, 10)
-    train_test_model(i, 10, 100, 25)
-    train_test_model(i, 10, 250, 10)
-    train_test_model(i, 10, 250, 25)
-    train_test_model(i, 15, 100, 10)
-    train_test_model(i, 15, 100, 25)
+    train_test_model(i, 15, 500, 10)
+    train_test_model(i, 15, 500, 25)
     train_test_model(i, 15, 250, 10)
     train_test_model(i, 15, 250, 25)
     
