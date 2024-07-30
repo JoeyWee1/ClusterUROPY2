@@ -49,9 +49,9 @@ def modify_datasets(x_in, y_in, time_in):
             derivative = (feature_now - feature_prior) / time_diff
             x_temp.append(derivative)
         #Append the date (day, month, year) and time since last orbit
-        x_temp.append(time_in[i].day)
-        x_temp.append(time_in[i].month)
-        x_temp.append(time_in[i].year)
+        # x_temp.append(time_in[i].day)
+        # x_temp.append(time_in[i].month)
+        # x_temp.append(time_in[i].year)
         x_temp.append(time_diff)
         x_out.append(x_temp)
         # Deal with label and time
