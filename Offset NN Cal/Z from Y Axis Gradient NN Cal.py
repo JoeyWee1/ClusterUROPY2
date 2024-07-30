@@ -232,5 +232,9 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
 for i in range(0,4):
     train_test_model(i, 15, 500, 10)
     train_test_model(i, 15, 500, 25)
-
-        
+    train_test_model(i, 15, 100, 10)
+    train_test_model(i, 15, 100, 25)
+    train_test_model(i, 15, 250, 10)
+    train_test_model(i, 15, 250, 25)
+    train_test_model(i, 15, 1000, 10)
+    train_test_model(i, 15, 1000, 25)        
