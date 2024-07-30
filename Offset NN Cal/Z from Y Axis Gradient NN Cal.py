@@ -126,15 +126,15 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
 
     #Define the model
     #V2
-    # model = nn.Sequential( 
-    #     nn.Linear(10, 20),
-    #     nn.ReLU(),
-    #     nn.Linear(20, 10),
-    #     nn.ReLU(),
-    #     nn.Linear(10, 5),
-    #     nn.ReLU(),
-    #     nn.Linear(5, 1)
-    # )
+    model = nn.Sequential( 
+        nn.Linear(10, 20),
+        nn.ReLU(),
+        nn.Linear(20, 10),
+        nn.ReLU(),
+        nn.Linear(10, 5),
+        nn.ReLU(),
+        nn.Linear(5, 1)
+    )
 
     #V3 try leaky relu
     # Using LeakyReLU activation functions
@@ -150,17 +150,17 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
 
     #V4 try dropout
     # Adding dropout layers
-    model = nn.Sequential(
-        nn.Linear(10, 20),
-        nn.ReLU(),
-        nn.Dropout(0.5),  # Dropout with 50% probability
-        nn.Linear(20, 10),
-        nn.ReLU(),
-        nn.Dropout(0.5),
-        nn.Linear(10, 5),
-        nn.ReLU(),
-        nn.Linear(5, 1)
-    )
+    # model = nn.Sequential(
+    #     nn.Linear(10, 20),
+    #     nn.ReLU(),
+    #     nn.Dropout(0.5),  # Dropout with 50% probability
+    #     nn.Linear(20, 10),
+    #     nn.ReLU(),
+    #     nn.Dropout(0.5),
+    #     nn.Linear(10, 5),
+    #     nn.ReLU(),
+    #     nn.Linear(5, 1)
+    # )
 
 
     print("Model defined")
@@ -226,20 +226,10 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} basic NN {} years {} epochs batch {}'.format(sc+1, training_years, n_epochs, batch_size))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v5 (no time).png".format(sc+1, training_years, n_epochs))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v2.png".format(sc+1, training_years, n_epochs))
 
 for i in range(0,4):
-    print("Cluster {}".format(i+1))
     train_test_model(i, 15, 500, 10)
-    print("Cluster {}".format(i+1))
     train_test_model(i, 15, 500, 25)
-    print("Cluster {}".format(i+1))
-    train_test_model(i, 15, 250, 10)
-    print("Cluster {}".format(i+1))
-    train_test_model(i, 15, 250, 25)
-    print("Cluster {}".format(i+1))
-    train_test_model(i, 15, 1000, 10)
-    print("Cluster {}".format(i+1))
-    train_test_model(i, 15, 1000, 25)
 
         
