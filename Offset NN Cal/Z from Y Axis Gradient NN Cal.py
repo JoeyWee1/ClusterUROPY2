@@ -40,6 +40,7 @@ def modify_datasets(x_in, y_in, time_in):
     time_out = []
     for i in range(1, len(x_in)):
         x_temp = x_in[i]
+        # x_temp = [0] * len(x_temp)
         time_diff = time_in[i] - time_in[i - 1]
         time_diff = time_diff.total_seconds()
         # Calculae and append the derivatives
@@ -49,9 +50,9 @@ def modify_datasets(x_in, y_in, time_in):
             derivative = (feature_now - feature_prior) / time_diff
             x_temp.append(derivative)
         #Append the date (day, month, year) and time since last orbit
-        # x_temp.append(time_in[i].day)
+        x_temp.append(time_in[i].day)
         # x_temp.append(time_in[i].month)
-        # x_temp.append(time_in[i].year)
+        x_temp.append(time_in[i].year)
         x_temp.append(time_diff)
         x_out.append(x_temp)
         # Deal with label and time
@@ -127,13 +128,13 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     #Define the model
     #V2
     model = nn.Sequential( 
-        nn.Linear(10, 20),
+        nn.Linear(9, 32),
         nn.ReLU(),
-        nn.Linear(20, 10),
+        nn.Linear(32, 16),
         nn.ReLU(),
-        nn.Linear(10, 5),
+        nn.Linear(16, 8),
         nn.ReLU(),
-        nn.Linear(5, 1)
+        nn.Linear(8, 1)
     )
 
     #V3 try leaky relu
@@ -226,7 +227,7 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} basic NN {} years {} epochs batch {}'.format(sc+1, training_years, n_epochs, batch_size))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v5 (no time).png".format(sc+1, training_years, n_epochs))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs batch {} v7 (only no months).png".format(sc+1, training_years, n_epochs, batch_size))
 
 for i in range(0,4):
     train_test_model(i, 15, 500, 10)
