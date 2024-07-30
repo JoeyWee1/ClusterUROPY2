@@ -127,13 +127,13 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     #Define the model
     #V2
     model = nn.Sequential( 
-        nn.Linear(10, 20),
+        nn.Linear(12, 36),
         nn.ReLU(),
-        nn.Linear(20, 10),
+        nn.Linear(36, 9),
         nn.ReLU(),
-        nn.Linear(10, 5),
+        nn.Linear(9, 3),
         nn.ReLU(),
-        nn.Linear(5, 1)
+        nn.Linear(3, 1)
     )
 
     #V3 try leaky relu
@@ -226,7 +226,7 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} basic NN {} years {} epochs batch {}'.format(sc+1, training_years, n_epochs, batch_size))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v2.png".format(sc+1, training_years, n_epochs))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v8 (previous z offset).png".format(sc+1, training_years, n_epochs))
 
 for i in range(0,4):
     train_test_model(i, 15, 500, 10)
