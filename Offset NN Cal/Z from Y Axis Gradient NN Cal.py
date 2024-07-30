@@ -49,9 +49,9 @@ def modify_datasets(x_in, y_in, time_in):
             derivative = (feature_now - feature_prior) / time_diff
             x_temp.append(derivative)
         #Append the date (day, month, year) and time since last orbit
-        x_temp.append(time_in[i].day)
-        x_temp.append(time_in[i].month)
-        x_temp.append(time_in[i].year)
+        # x_temp.append(time_in[i].day)
+        # x_temp.append(time_in[i].month)
+        # x_temp.append(time_in[i].year)
         x_temp.append(time_diff)
         x_out.append(x_temp)
         # Deal with label and time
@@ -226,7 +226,7 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} basic NN {} years {} epochs batch {}'.format(sc+1, training_years, n_epochs, batch_size))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v4.png".format(sc+1, training_years, n_epochs))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v5 (no time).png".format(sc+1, training_years, n_epochs))
 
 for i in range(0,4):
     print("Cluster {}".format(i+1))
