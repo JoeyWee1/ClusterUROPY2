@@ -218,7 +218,11 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
         y_test = y_scaler.inverse_transform(y_test)
         y_train = y_scaler.inverse_transform(y_train)
     
-    plt.figure(figsize=(30, 6))
+    plt.plot(history)
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/History Basic NN {} years {} epochs v8 (previous z offset).png".format(sc+1, training_years, n_epochs))
+    plt.clf()
+
+    plt.figure(figsize=(20, 6))
     plt.scatter(time_train, y_train, label='Training', marker='x')
     plt.scatter(time_test, y_test, label='Calibrated', marker='x', s=5)
     plt.scatter(time_test, y_pred, label='Model Predicted', marker='x', s=5)
@@ -233,4 +237,7 @@ for i in range(0,4):
     train_test_model(i, 15, 500, 10)
     train_test_model(i, 15, 500, 25)
 
-        
+
+
+
+
