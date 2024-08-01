@@ -239,7 +239,7 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     
     plt.figure(figsize=(10, 6))
     plt.plot(history)
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/History Basic NN {} years {} epochs batch {} v11 (Complex Model).png".format(sc+1, training_years, n_epochs, batch_size))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/History Basic NN {} years {} epochs batch {} v12 (Reduced Learnign Rate).png".format(sc+1, training_years, n_epochs, batch_size))
     plt.clf()
 
     plt.figure(figsize=(20, 6))
@@ -251,7 +251,7 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} basic NN {} years {} epochs batch {}'.format(sc+1, training_years, n_epochs, batch_size))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs batch {} v11 (Complex Model).png".format(sc+1, training_years, n_epochs, batch_size))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs batch {} v12 (Reduced Learning Rate).png".format(sc+1, training_years, n_epochs, batch_size))
 
 for i in range(0,4):
     train_test_model(i, 15, 500, 10)
