@@ -16,6 +16,7 @@ import torch.nn as nn
 import torch.optim as optim
 import tqdm
 import copy
+from torch.optim import lr_scheduler
 
 #%% Importing orbits
 orbits = np.load("Offset NN Cal/cleanedOrbitsArrayV6(FinalRange2DataOnly).npy", allow_pickle = True)
@@ -127,15 +128,15 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
 
     #Define the model
     #V2
-    model = nn.Sequential( 
-        nn.Linear(12, 36),
-        nn.ReLU(),
-        nn.Linear(36, 9),
-        nn.ReLU(),
-        nn.Linear(9, 3),
-        nn.ReLU(),
-        nn.Linear(3, 1)
-    )
+    # model = nn.Sequential( 
+    #     nn.Linear(12, 36),
+    #     nn.ReLU(),
+    #     nn.Linear(36, 9),
+    #     nn.ReLU(),
+    #     nn.Linear(9, 3),
+    #     nn.ReLU(),
+    #     nn.Linear(3, 1)
+    # )
 
     #V3 try leaky relu
     # Using LeakyReLU activation functions
@@ -163,12 +164,30 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     #     nn.Linear(5, 1)
     # )
 
+    #V11
+    model = nn.Sequential(
+        nn.Linear(12, 64),
+        nn.BatchNorm1d(64),
+        nn.ReLU(),
+        nn.Dropout(p=0.3),
+        nn.Linear(64, 128),
+        nn.BatchNorm1d(128),
+        nn.ReLU(),
+        nn.Dropout(p=0.3),
+        nn.Linear(128, 64),
+        nn.BatchNorm1d(64),
+        nn.ReLU(),
+        nn.Dropout(p=0.3),
+        nn.Linear(64, 1)
+    )
+
 
     print("Model defined")
 
     #Define the loss function and batch start indices
-    loss_fn = nn.MSELoss()  # mean square error
+    loss_fn = nn.L1Loss()  # mean absolute error
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     batch_start = torch.arange(0, len(x_train), batch_size)
 
     #Run training and save best model
@@ -207,8 +226,8 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     
     #%% Restore model and return best accuracy
     model.load_state_dict(best_weights)
-    print("MSE: %.2f" % best_mse)
-    print("RMSE: %.2f" % np.sqrt(best_mse))
+    print("MAE: %.2f" % best_mse)
+    # print("RMSE: %.2f" % np.sqrt(best_mse))
 
     #Plot predictions
     model.eval()
@@ -218,7 +237,12 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
         y_test = y_scaler.inverse_transform(y_test)
         y_train = y_scaler.inverse_transform(y_train)
     
-    plt.figure(figsize=(30, 6))
+    plt.figure(figsize=(10, 6))
+    plt.plot(history)
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/History Basic NN {} years {} epochs batch {} v12 (Reduced Learnign Rate).png".format(sc+1, training_years, n_epochs, batch_size))
+    plt.clf()
+
+    plt.figure(figsize=(20, 6))
     plt.scatter(time_train, y_train, label='Training', marker='x')
     plt.scatter(time_test, y_test, label='Calibrated', marker='x', s=5)
     plt.scatter(time_test, y_pred, label='Model Predicted', marker='x', s=5)
@@ -227,14 +251,13 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} basic NN {} years {} epochs batch {}'.format(sc+1, training_years, n_epochs, batch_size))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs v8 (previous z offset).png".format(sc+1, training_years, n_epochs))
+    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/NN/Basic NN {} years {} epochs batch {} v12 (Reduced Learning Rate).png".format(sc+1, training_years, n_epochs, batch_size))
 
 for i in range(0,4):
     train_test_model(i, 15, 500, 10)
     train_test_model(i, 15, 500, 25)
-    train_test_model(i, 15, 100, 10)
-    train_test_model(i, 15, 100, 25)
-    train_test_model(i, 15, 250, 10)
-    train_test_model(i, 15, 250, 25)
-    train_test_model(i, 15, 1000, 10)
-    train_test_model(i, 15, 1000, 25)        
+
+
+
+
+

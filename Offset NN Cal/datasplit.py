@@ -101,7 +101,7 @@ def yz_create_and_split_data(orbits, sc, training_years):
     first_orbit_start_time = datetime.datetime(2000, 8, 24, 8, 56, 52)
     split_time = first_orbit_start_time + datetime.timedelta(seconds = (training_years * 31557600)) #Defines the split time based on the number of training years
 
-    for i in range(1, len(orbits[sc])): #!
+    for i in range(1, len(orbits[sc])): #! 
         orbit = orbits[sc][i]
         orbit_start_time = orbit.startTime #Orbit start date to check if it goes into the test or train datasets
         training_period_marker = True; #True indicates that the orbit belongs in the training period. 
