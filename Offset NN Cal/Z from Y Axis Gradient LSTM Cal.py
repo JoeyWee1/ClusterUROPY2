@@ -128,7 +128,7 @@ def create_sequences(x, y, time_steps = 24):
     return np.array(xs), np.array(ys)
 
 #%%Run things
-def train_test_model(sc, training_years, n_epochs, neurons),:
+def train_test_model(sc, training_years, n_epochs, neurons, time_steps):
     #Create the sets using datasplit
     x_train, x_test, y_train, y_test, time_train, time_test, sc, training_years, split_time = yz_create_and_split_data(orbits, sc, training_years) 
     print("Data created")
@@ -143,8 +143,8 @@ def train_test_model(sc, training_years, n_epochs, neurons),:
     print("Data scaled")
 
     #Creating sequences
-    x_train_sequences, y_train_sequences = create_sequences(x_train, y_train, time_steps=24)
-    x_test_sequences, y_test_sequences = create_sequences(x_test, y_test, time_steps=24)
+    x_train_sequences, y_train_sequences = create_sequences(x_train, y_train, time_steps=time_steps)
+    x_test_sequences, y_test_sequences = create_sequences(x_test, y_test, time_steps=time_steps)
 
     #Creating the model
     model = keras.Sequential()
@@ -178,21 +178,25 @@ def train_test_model(sc, training_years, n_epochs, neurons),:
 
     #Plotting the model and history + saving graphs
     plt.figure(figsize=(10, 6))
-    plt.plot(history)
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/LSTM/V1 History LSTM {} neurons {} years {} epochs.png".format(sc+1, neurons, training_years, n_epochs))
+    plt.plot(history.history['loss'], label='train')
+    plt.plot(history.history['val_loss'], label='test')
+    plt.legend()
+    plt.savefig("/home/joey/Desktop/UROP Y2/ClusterUROPY2-1/Outputs_Z_From_Y_Axis/C{}/LSTM/V1 History LSTM {} neurons {} years {} epochs {} steps.png".format(sc+1, neurons, training_years, n_epochs, time_steps))
     plt.clf()
 
     plt.figure(figsize=(15, 6))
-    plt.scatter(time_train, y_train_inv, label='Training', marker='x')
-    plt.scatter(time_test, y_test_inv, label='Calibrated', marker='x', s=5)
-    plt.scatter(time_test, y_pred_inv, label='Model Predicted', marker='x', s=5)
+    plt.scatter(time_train[(time_steps + 1):], y_train_inv.flatten(), label='Training Data', marker='x')
+    plt.scatter(time_test[(time_steps + 1):], y_test_inv.flatten(), label='Actual Values', marker='x')
+    plt.scatter(time_test[(time_steps + 1):], y_pred_inv.flatten(), label='Test Predictions', marker='x')
     plt.axvline(x=split_time, color='r', linestyle='--', label='Split Time')
     plt.xlabel('Time')
     plt.ylabel('Offset')
     plt.title('Z from Y: Cluster {} LSTM {} neurons {} years {} epochs'.format(sc+1, neurons, training_years, n_epochs))
     plt.legend()
-    plt.savefig("./Outputs_Z_From_Y_Axis/C{}/LSTM/V1 History LSTM {} neurons {} years {} epochs.png".format(sc+1, neurons, training_years, n_epochs))
+    plt.savefig("/home/joey/Desktop/UROP Y2/ClusterUROPY2-1/Outputs_Z_From_Y_Axis/C{}/LSTM/V1 LSTM {} neurons {} years {} epochs {} steps.png".format(sc+1, neurons, training_years, n_epochs, time_steps))
+
+
 
 for i in range(0,4):
-    train_test_model(i, 15, 1000, 128)
-    train_test_model(i, 15, 1000, 128)
+    train_test_model(i, 15, 1000, 128, 25)
+    train_test_model(i, 15, 1000, 128, 25)
