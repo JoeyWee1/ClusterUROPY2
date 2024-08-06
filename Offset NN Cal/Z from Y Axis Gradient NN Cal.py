@@ -224,7 +224,7 @@ def train_test_model(sc, training_years, n_epochs, batch_size):
             best_mse = mse
             best_weights = copy.deepcopy(model.state_dict())
     
-    #%% Restore model and return best accuracy
+    # Restore model and return best accuracy
     model.load_state_dict(best_weights)
     print("MAE: %.2f" % best_mse)
     # print("RMSE: %.2f" % np.sqrt(best_mse))

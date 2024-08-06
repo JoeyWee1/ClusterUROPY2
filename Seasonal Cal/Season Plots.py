@@ -64,16 +64,27 @@ for spacecraft in range(0, 4):
             fig, axs = plt.subplots(len(x_test_raw[0]) + 1, 1, figsize=(10, 10))
             x_test_raw = np.array(x_test_raw)
             for i in range(0,len(x_test_raw[0])):
+                # Adding subplots
                 axs[i].scatter(time_test, x_test_raw[:,i])
                 axs[i].set_xlabel('Time')
                 axs[i].set_ylabel(f'Feature {i+1}')
                 axs[i].set_title(f'Spacecraft {spacecraft+1} Axis {axis+1} Season {season+1} Orbit {i+1}')
-
+                
             axs[-1].scatter(time_test, y_test_raw)
             plt.tight_layout()
             plt.savefig(f"./Outputs_Season_Plots/C{spacecraft+1}/Time/Features {axes[axis]}-Axis Season {season+1}.png")
             # plt.show()
             plt.clf()
+
+            #Plot offsets against features in subplots
+            fig, axs = plt.subplots(len(x_test_raw[0]), 1, figsize=(10, 10))
+            for i in range(0, len(x_test_raw[0])):
+                axs[i].scatter(x_test_raw[:,i], y_test_raw)
+                axs[i].set_xlabel(f'Feature {i+1}')
+                axs[i].set_ylabel('Offset')
+                axs[i].set_title(f'Spacecraft {spacecraft+1} Axis {axis+1} Season {season+1} Orbit {i+1}')
+            plt.tight_layout()
+            plt.savefig(f"./Outputs_Season_Plots/C{spacecraft+1}/Features/Features {axes[axis]}-Axis Season {season+1}.png")
 
     
 
