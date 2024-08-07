@@ -129,7 +129,7 @@ def train_test_model(sc, season, training_years, axis, n_epochs, batch_size):
 
     #V11
     model = nn.Sequential(
-        nn.Linear(12, 64),
+        nn.Linear(2, 64),
         nn.BatchNorm1d(64),
         nn.ReLU(),
         nn.Dropout(p=0.3),
