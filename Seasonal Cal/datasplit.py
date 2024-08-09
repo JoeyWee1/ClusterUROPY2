@@ -166,7 +166,8 @@ def season_create_and_split_data(orbits, sc, training_years, axis): #Axis y = 1,
     x_test = []
     y_test = []
     time_test = []
-    first_orbit_start_time = datetime.datetime(2000, 8, 24, 8, 56, 52)
+    # first_orbit_start_time = datetime.datetime(2000, 8, 24, 8, 56, 52)
+    first_orbit_start_time = orbits[0].startTime
     split_time = first_orbit_start_time + datetime.timedelta(seconds = (training_years * 31557600)) #Defines the split time based on the number of training years
 
     for orbit in orbits: 
