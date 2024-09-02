@@ -138,12 +138,6 @@ def yz_create_and_split_data(orbits, sc, training_years):
 
     return x_train, x_test, y_train, y_test, time_train, time_test, sc, training_years, split_time
 
-
-#This is a module that will return data sets where the interpolated data has been removed
-#The data will be in the same form as the datasplit.py module
-#Calibration is only properly performed for the orbits starting in Jan, Feb, March, April
-
-#%% Create features
 def x_axis_create_and_split_data(orbits, sc, training_years): 
     """
     Function to split the data set into testing and training data based on a training length (time)
