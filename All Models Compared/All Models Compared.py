@@ -33,7 +33,7 @@ min_error.fill(np.inf)
 # svr_best_predictions = [[[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]]
 # nn_best_predictions = [[[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]]
 # lstm_best_predictions = [[[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]]
-training_years = 15
+training_years = 12.6
 print("Variables initialised")
 
 #%% Loop!
@@ -43,9 +43,13 @@ for sc in range(0,4):
         print("Spacecraft: ", sc, "Axis: ", axis)
         lengths = [0,0,0,0]
         knn_best_predictions = []
+        knn_residuals = []
         svr_best_predictions = []
+        svr_residuals = []
         nn_best_predictions = []
+        nn_residuals = []
         lstm_best_predictions = []
+        lstm_residuals = []
 
         ##Split the data
         #Regular features and labels
@@ -94,7 +98,7 @@ for sc in range(0,4):
         print("Data split")
 
         ##KNN
-        for k in range(1, 2): #Test k values from 1 to 10
+        for k in range(1, 11): #Test k values from 1 to 10
             print("Spacecraft: ", sc, "Axis: ", axis, "Model: KNN", "k: ", k)
             knn_model = KNeighborsRegressor(n_neighbors=k, weights='distance') 
             knn_model.fit(x_train, y_train)
@@ -103,10 +107,11 @@ for sc in range(0,4):
             if (knn_error < min_error[sc][axis][0]):
                 min_error[sc][axis][0] = knn_error
                 knn_best_predictions = y_pred
+                knn_residuals = np.abs(y_test - y_pred)
                 lengths[0] = len(y_pred)
 
         ##SVR
-        c_range = np.linspace(0.1, 10, 1)
+        c_range = np.linspace(0.1, 10, 50)
         for c in c_range:
             print("Spacecraft: ", sc, "Axis: ", axis, "Model: SVR", "C: ", c)
             svr_model = SVR(kernel='rbf', C=c, gamma='auto') #Automatically scale the gamma parameter
@@ -116,6 +121,7 @@ for sc in range(0,4):
             if (svr_error < min_error[sc][axis][1]):
                 min_error[sc][axis][1] = svr_error
                 svr_best_predictions = y_pred
+                svr_residuals = np.abs(y_test - y_pred)
                 lengths[1] = len(y_pred)
 
         ##NN
@@ -150,7 +156,7 @@ for sc in range(0,4):
         loss_fn = nn.MSELoss()  # mean square error
         optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
-        n_epochs = 1   # number of epochs to run
+        n_epochs = 100   # number of epochs to run
         batch_size = 10  # size of each batch
         batch_start = torch.arange(0, len(x_train), batch_size)
 
@@ -186,14 +192,16 @@ for sc in range(0,4):
             if NN_error < min_error[sc][axis][2]:
                 min_error[sc][axis][2] = NN_error
                 nn_best_predictions = y_pred_unscaled
+                y_pred_unscaled = np.array(y_pred_unscaled).reshape(-1)
+                nn_residuals = np.abs(y_test - y_pred_unscaled)
                 lengths[2] = len(y_pred_unscaled)
 
         ##LSTM
         #Scale the data
         
         #Define the model
-        # for neurons in (32, 64, 128, 256):
-        for neurons in (1,2):
+        for neurons in (32, 64, 128, 256):
+            # for neurons in (1,2):
             print("Spacecraft: ", sc, "Axis: ", axis, "Model: LSTM", "Neurons: ", neurons)
             model = keras.Sequential()
             model.add(
@@ -205,7 +213,7 @@ for sc in range(0,4):
             model.add(keras.layers.Dense(units=1)) #Regression output
             model.compile(optimizer='adam', loss='mean_squared_error')
 
-            model.fit(x_train_sequences, y_train_sequences, epochs=1, batch_size=10, validation_split=0.1, shuffle=False)
+            model.fit(x_train_sequences, y_train_sequences, epochs=100, batch_size=10, validation_split=0.1, shuffle=False)
 
             y_pred = model.predict(x_test_sequences)
             # print(f"Predictions: {len(y_pred)}")
@@ -217,28 +225,24 @@ for sc in range(0,4):
                 # print("New minimum error; best pred of length: ", len(y_pred_unscaled))
                 min_error[sc][axis][3] = LSTM_error
                 lstm_best_predictions = y_pred_unscaled
+                y_test_sequences = np.array(y_test_sequences).reshape(-1)
+                lstm_residuals = np.abs(y_test_sequences - y_pred_unscaled)
                 lengths[3] = len(y_pred_unscaled)
 
         ##Plot Everything
+        time_test = np.array(time_test)
+        sequences_time_test = np.array(sequences_time_test)
+
+        #All
         plt.figure(figsize=(10, 6), dpi=200)
-        # plt.scatter(time_train, y_train, label='Training', marker='o', linewidths = 1, color = 'red')
-        
-        # plt.scatter(time_test, y_test, label='Actual', marker='x', linewidths = 1, color = 'red')
-
-        # plt.scatter(time_test[::3], knn_best_predictions[::3], label='KNN', marker='x', linewidths = 1, color = 'peru')
-        # plt.scatter(time_test[::3], svr_best_predictions[::3], label='SVR', marker='x', linewidths = 1, color = 'springgreen')
-        # plt.scatter(time_test[::3], nn_best_predictions[::3], label='NN', marker='x', linewidths = 1, color = 'dodgerblue')
-        # plt.scatter(sequences_time_test[::3], lstm_best_predictions[::3], label='LSTM', marker='x', linewidths = 1, color = 'deeppink')
-
-        plt.plot(time_train, y_train, label='Training', color='red')
-        plt.plot(time_test, y_test, label='Actual', color='red')
-        plt.plot(time_test[::3], knn_best_predictions[::3], label='KNN', color='peru')
-        plt.plot(time_test[::3], svr_best_predictions[::3], label='SVR', color='springgreen')
-        plt.plot(time_test[::3], nn_best_predictions[::3], label='NN', color='dodgerblue')
-        plt.plot(sequences_time_test[::3], lstm_best_predictions[::3], label='LSTM', color='deeppink')
-        
+        plt.scatter(time_train[::3], y_train[::3], marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        plt.scatter(time_test[::3], y_test[::3], label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        plt.axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        plt.scatter(time_test[::4], nn_best_predictions[::4], label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        plt.scatter(sequences_time_test[::4], lstm_best_predictions[::4], label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        plt.scatter(time_test[::4], knn_best_predictions[::4], label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        plt.scatter(time_test[::4], svr_best_predictions[::4], label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
         plt.legend()
-
         plt.xlabel('Time', fontsize=20)
         plt.ylabel('Offset', fontsize=20)
         plt.xticks(fontsize=15)
@@ -247,11 +251,161 @@ for sc in range(0,4):
         axes = ["X", "Y", "Z"]
         plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years.png'.format(spacecraft[sc], axes[axis], training_years))
 
+        #NN
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(time_train, y_train, marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        plt.scatter(time_test, y_test, label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        plt.axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        plt.scatter(time_test, nn_best_predictions, label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        plt.legend()
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Offset', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_NN.png'.format(spacecraft[sc], axes[axis], training_years))
 
-        print("Spacecraft: ", sc, "Axis: ", axis, "Lengths: ", lengths)
+        #NN residuals
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(time_test, nn_residuals, label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Residual', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_NN_Residuals.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #LSTM
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(time_train, y_train, marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        plt.scatter(time_test, y_test, label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        plt.axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        plt.scatter(sequences_time_test, lstm_best_predictions, label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        plt.legend()
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Offset', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_LSTM.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #LSTM residuals
+        print(len(sequences_time_test), len(lstm_residuals))
+        print(type(sequences_time_test), type(lstm_residuals))
+        print(len(sequences_time_test.flatten()), len(lstm_residuals.flatten()))
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(sequences_time_test, lstm_residuals, label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Residual', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_LSTM_Residuals.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #KNN
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(time_train, y_train, marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        plt.scatter(time_test, y_test, label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        plt.axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        plt.scatter(time_test, knn_best_predictions, label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        plt.legend()
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Offset', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_KNN.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #KNN residuals
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(time_test, knn_residuals, label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Residual', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_KNN_Residuals.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #SVR
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(time_train, y_train, marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        plt.scatter(time_test, y_test, label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        plt.axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        plt.scatter(time_test, svr_best_predictions, label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
+        plt.legend()
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Offset', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_SVR.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #SVR residuals
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(time_test, svr_residuals, label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Residual', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_SVR_Residuals.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #All residuals together on the same plot
+        plt.figure(figsize=(10, 6), dpi=200)
+        plt.scatter(time_test, nn_residuals, label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        plt.scatter(sequences_time_test, lstm_residuals, label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        plt.scatter(time_test, knn_residuals, label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        plt.scatter(time_test, svr_residuals, label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
+        plt.xlabel('Time', fontsize=20)
+        plt.ylabel('Residual', fontsize=20)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.legend()
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_Residuals.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #Residuals as subplots
+        fig, axs = plt.subplots(2, 2, figsize=(20, 12), dpi=200)
+        axs[0, 0].scatter(time_test, nn_residuals, label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        axs[0, 0].set_ylabel('Residual', fontsize=20)
+        axs[0, 0].set_title('NN', fontsize=20)
+        axs[0, 1].scatter(sequences_time_test, lstm_residuals, label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        axs[0, 1].set_title('LSTM', fontsize=20)
+        axs[1, 0].scatter(time_test, knn_residuals, label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        axs[1, 0].set_xlabel('Time', fontsize=20)
+        axs[1, 0].set_ylabel('Residual', fontsize=20)
+        axs[1, 0].set_title('KNN', fontsize=20)
+        axs[1, 1].scatter(time_test, svr_residuals, label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
+        axs[1, 1].set_xlabel('Time', fontsize=20)
+        axs[1, 1].set_title('SVR', fontsize=20) 
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_Subplot_Residuals.png'.format(spacecraft[sc], axes[axis], training_years))
+
+        #Everything as subplots with only the bottom plots having the time label and the left plots having the offset label
+        fig, axs = plt.subplots(2, 2, figsize=(20, 12), dpi=200)
+        axs[0, 0].scatter(time_train, y_train, marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        axs[0, 0].scatter(time_test, y_test, label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        axs[0, 0].axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        axs[0, 0].scatter(time_test, nn_best_predictions, label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        axs[0, 0].legend()
+        axs[0, 0].set_ylabel('Offset', fontsize=20)
+        axs[0, 0].set_title('NN', fontsize=20)
+        axs[0, 1].scatter(time_train, y_train, marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        axs[0, 1].scatter(time_test, y_test, label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        axs[0, 1].axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        axs[0, 1].scatter(sequences_time_test, lstm_best_predictions, label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        axs[0, 1].legend()
+        axs[0, 1].set_title('LSTM', fontsize=20)
+        axs[1, 0].scatter(time_train, y_train, marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        axs[1, 0].scatter(time_test, y_test, label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        axs[1, 0].axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        axs[1, 0].scatter(time_test, knn_best_predictions, label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        axs[1, 0].legend()
+        axs[1, 0].set_xlabel('Time', fontsize=20)
+        axs[1, 0].set_ylabel('Offset', fontsize=20)
+        axs[1, 0].set_title('KNN', fontsize=20)
+        axs[1, 1].scatter(time_train, y_train, marker='o', linewidths = 0.3, color = '#e60049', s = 28)
+        axs[1, 1].scatter(time_test, y_test, label='Actual', marker='o', linewidths = 1, color = '#e60049', s = 20)
+        axs[1, 1].axvline(x=split_time, color='#e60049', linestyle='--', label='Split Time')
+        axs[1, 1].scatter(time_test, svr_best_predictions, label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
+        axs[1, 1].legend()
+        axs[1, 1].set_xlabel('Time', fontsize=20)
+        axs[1, 1].set_title('SVR', fontsize=20) 
+        plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_All.png'.format(spacecraft[sc], axes[axis], training_years))
+
 
 #%% Save the results
-np.save("Outputs/Outputs_Models_Compared/min_error.npy", min_error)
+np.save("Outputs/Outputs_Models_Compared/min_error_12_6.npy", min_error)
 
 #%% Plot and print results
 print(min_error)
