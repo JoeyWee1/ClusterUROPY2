@@ -33,7 +33,7 @@ min_error.fill(np.inf)
 # svr_best_predictions = [[[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]]
 # nn_best_predictions = [[[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]]
 # lstm_best_predictions = [[[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]]
-training_years = 12.6
+training_years = 15
 print("Variables initialised")
 
 #%% Loop!
@@ -44,8 +44,10 @@ for sc in range(0,4):
         lengths = [0,0,0,0]
         knn_best_predictions = []
         knn_residuals = []
+        knn_best_k = np.nan
         svr_best_predictions = []
         svr_residuals = []
+        svr_best_c = np.nan
         nn_best_predictions = []
         nn_residuals = []
         lstm_best_predictions = []
@@ -103,26 +105,30 @@ for sc in range(0,4):
             knn_model = KNeighborsRegressor(n_neighbors=k, weights='distance') 
             knn_model.fit(x_train, y_train)
             y_pred = knn_model.predict(x_test)
-            knn_error = np.mean((y_pred - y_test)**2)
+            # knn_error = np.mean((y_pred - y_test)**2)
+            knn_error = np.mean(np.abs(y_pred - y_test))
             if (knn_error < min_error[sc][axis][0]):
                 min_error[sc][axis][0] = knn_error
                 knn_best_predictions = y_pred
                 knn_residuals = np.abs(y_test - y_pred)
                 lengths[0] = len(y_pred)
+                knn_best_k = k
 
         ##SVR
-        c_range = np.linspace(0.1, 10, 50)
+        c_range = np.linspace(0.1, 1, 10)
         for c in c_range:
             print("Spacecraft: ", sc, "Axis: ", axis, "Model: SVR", "C: ", c)
             svr_model = SVR(kernel='rbf', C=c, gamma='auto') #Automatically scale the gamma parameter
             svr_model.fit(x_train, y_train)
             y_pred = svr_model.predict(x_test)
-            svr_error = np.mean((y_pred - y_test)**2)
+            # svr_error = np.mean((y_pred - y_test)**2)
+            svr_error = np.mean(np.abs(y_pred - y_test))
             if (svr_error < min_error[sc][axis][1]):
                 min_error[sc][axis][1] = svr_error
                 svr_best_predictions = y_pred
                 svr_residuals = np.abs(y_test - y_pred)
                 lengths[1] = len(y_pred)
+                svr_best_c = c
 
         ##NN
         x_train_tensor_unscaled = torch.tensor(x_train, dtype=torch.float32)
@@ -153,7 +159,8 @@ for sc in range(0,4):
             nn.Linear(5, 1)
         )
 
-        loss_fn = nn.MSELoss()  # mean square error
+        # loss_fn = nn.MSELoss()  # mean square error
+        loss_fn = nn.L1Loss()  # mean absolute error
         optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
         n_epochs = 100   # number of epochs to run
@@ -211,7 +218,8 @@ for sc in range(0,4):
             )
             model.add(keras.layers.Dropout(rate=0.2))
             model.add(keras.layers.Dense(units=1)) #Regression output
-            model.compile(optimizer='adam', loss='mean_squared_error')
+            # model.compile(optimizer='adam', loss='mean_squared_error')
+            model.compile(optimizer='adam', loss='mean_absolute_error')
 
             model.fit(x_train_sequences, y_train_sequences, epochs=100, batch_size=10, validation_split=0.1, shuffle=False)
 
@@ -228,6 +236,22 @@ for sc in range(0,4):
                 y_test_sequences = np.array(y_test_sequences).reshape(-1)
                 lstm_residuals = np.abs(y_test_sequences - y_pred_unscaled)
                 lengths[3] = len(y_pred_unscaled)
+
+
+        ##Save the predictions, testing data, and residuals
+        axes = ["X", "Y", "Z"]
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_KNN_Predictions.npy", knn_best_predictions)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_KNN_Residuals.npy", knn_residuals)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_SVR_Predictions.npy", svr_best_predictions)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_SVR_Residuals.npy", svr_residuals)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_NN_Predictions.npy", nn_best_predictions)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_NN_Residuals.npy", nn_residuals)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_LSTM_Predictions.npy", lstm_best_predictions)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_LSTM_Residuals.npy", lstm_residuals)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_Test_Y.npy", y_test)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_Test_Y_Sequences.npy", y_test_sequences)
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_KNN_Best_K{knn_best_k}.npy", np.array(knn_best_k))
+        np.save(f"./Outputs/Outputs_Models_Data/Spacecraft_{sc}_Axis_{axes[axis]}_Training-Years_{training_years}_SVR_Best_C{svr_best_c}.npy", np.array(svr_best_c))
 
         ##Plot Everything
         time_test = np.array(time_test)
@@ -248,7 +272,7 @@ for sc in range(0,4):
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
         spacecraft = ["Tango", "Salsa", "Rumba", "Samba"]
-        axes = ["X", "Y", "Z"]
+
         plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years.png'.format(spacecraft[sc], axes[axis], training_years))
 
         #NN
@@ -266,7 +290,7 @@ for sc in range(0,4):
 
         #NN residuals
         plt.figure(figsize=(10, 6), dpi=200)
-        plt.scatter(time_test, nn_residuals, label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        plt.scatter(time_test, np.abs(nn_residuals), label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
         plt.xlabel('Time', fontsize=20)
         plt.ylabel('Residual', fontsize=20)
         plt.xticks(fontsize=15)
@@ -287,11 +311,8 @@ for sc in range(0,4):
         plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_LSTM.png'.format(spacecraft[sc], axes[axis], training_years))
 
         #LSTM residuals
-        print(len(sequences_time_test), len(lstm_residuals))
-        print(type(sequences_time_test), type(lstm_residuals))
-        print(len(sequences_time_test.flatten()), len(lstm_residuals.flatten()))
         plt.figure(figsize=(10, 6), dpi=200)
-        plt.scatter(sequences_time_test, lstm_residuals, label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        plt.scatter(sequences_time_test, np.abs(lstm_residuals), label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
         plt.xlabel('Time', fontsize=20)
         plt.ylabel('Residual', fontsize=20)
         plt.xticks(fontsize=15)
@@ -313,7 +334,7 @@ for sc in range(0,4):
 
         #KNN residuals
         plt.figure(figsize=(10, 6), dpi=200)
-        plt.scatter(time_test, knn_residuals, label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        plt.scatter(time_test, np.abs(knn_residuals), label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
         plt.xlabel('Time', fontsize=20)
         plt.ylabel('Residual', fontsize=20)
         plt.xticks(fontsize=15)
@@ -335,7 +356,7 @@ for sc in range(0,4):
 
         #SVR residuals
         plt.figure(figsize=(10, 6), dpi=200)
-        plt.scatter(time_test, svr_residuals, label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
+        plt.scatter(time_test, np.abs(svr_residuals), label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
         plt.xlabel('Time', fontsize=20)
         plt.ylabel('Residual', fontsize=20)
         plt.xticks(fontsize=15)
@@ -344,10 +365,10 @@ for sc in range(0,4):
 
         #All residuals together on the same plot
         plt.figure(figsize=(10, 6), dpi=200)
-        plt.scatter(time_test, nn_residuals, label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
-        plt.scatter(sequences_time_test, lstm_residuals, label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
-        plt.scatter(time_test, knn_residuals, label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
-        plt.scatter(time_test, svr_residuals, label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
+        plt.scatter(time_test, np.abs(nn_residuals), label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        plt.scatter(sequences_time_test, np.abs(lstm_residuals), label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        plt.scatter(time_test, np.abs(knn_residuals), label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        plt.scatter(time_test, np.abs(svr_residuals), label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
         plt.xlabel('Time', fontsize=20)
         plt.ylabel('Residual', fontsize=20)
         plt.xticks(fontsize=15)
@@ -357,16 +378,16 @@ for sc in range(0,4):
 
         #Residuals as subplots
         fig, axs = plt.subplots(2, 2, figsize=(20, 12), dpi=200)
-        axs[0, 0].scatter(time_test, nn_residuals, label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
+        axs[0, 0].scatter(time_test, np.abs(nn_residuals), label='NN', marker='x', linewidths = 1, color = 'chartreuse', s = 16)
         axs[0, 0].set_ylabel('Residual', fontsize=20)
         axs[0, 0].set_title('NN', fontsize=20)
-        axs[0, 1].scatter(sequences_time_test, lstm_residuals, label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
+        axs[0, 1].scatter(sequences_time_test, np.abs(lstm_residuals), label='LSTM', marker='x', linewidths = 1, color = '#c760ff', s = 16)
         axs[0, 1].set_title('LSTM', fontsize=20)
-        axs[1, 0].scatter(time_test, knn_residuals, label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
+        axs[1, 0].scatter(time_test, np.abs(knn_residuals), label='KNN', marker='x', linewidths = 1, color = '#0bb4ff', s = 16)
         axs[1, 0].set_xlabel('Time', fontsize=20)
         axs[1, 0].set_ylabel('Residual', fontsize=20)
         axs[1, 0].set_title('KNN', fontsize=20)
-        axs[1, 1].scatter(time_test, svr_residuals, label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
+        axs[1, 1].scatter(time_test, np.abs(svr_residuals), label='SVR', marker='x', linewidths = 1, color = '#ffa300', s = 16)
         axs[1, 1].set_xlabel('Time', fontsize=20)
         axs[1, 1].set_title('SVR', fontsize=20) 
         plt.savefig('./Outputs/Outputs_Models_Compared/Spacecraft_{}_{}-Axis_{}_Training-Years_Subplot_Residuals.png'.format(spacecraft[sc], axes[axis], training_years))
@@ -405,7 +426,7 @@ for sc in range(0,4):
 
 
 #%% Save the results
-np.save("Outputs/Outputs_Models_Compared/min_error_12_6.npy", min_error)
+np.save("Outputs/Outputs_Models_Compared/min_error_15.npy", min_error)
 
 #%% Plot and print results
 print(min_error)
